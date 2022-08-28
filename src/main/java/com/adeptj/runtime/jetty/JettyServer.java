@@ -1,6 +1,8 @@
 package com.adeptj.runtime.jetty;
 
 import com.adeptj.runtime.kernel.AbstractServer;
+import com.adeptj.runtime.kernel.SciInfo;
+import com.adeptj.runtime.kernel.ServerName;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.ServerConnector;
@@ -9,7 +11,6 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
-import javax.servlet.ServletContainerInitializer;
 import javax.servlet.http.HttpServlet;
 
 public class JettyServer extends AbstractServer {
@@ -17,7 +18,12 @@ public class JettyServer extends AbstractServer {
     private org.eclipse.jetty.server.Server jetty;
 
     @Override
-    public void start(String[] args, ServletContainerInitializer sci, Class<?>... classes) {
+    public ServerName getName() {
+        return ServerName.JETTY;
+    }
+
+    @Override
+    public void start(String[] args, SciInfo sciInfo) {
         int maxThreads = 100;
         int minThreads = 10;
         int idleTimeout = 120;
@@ -29,7 +35,8 @@ public class JettyServer extends AbstractServer {
         ServletHandler servletHandler = new ServletHandler();
         servletHandler.addServletWithMapping(GreetingServlet.class, "/greet");
         ServletContextHandler servletContextHandler = new ServletContextHandler();
-        servletContextHandler.addServletContainerInitializer(new ServletContainerInitializerHolder(sci, classes));
+        servletContextHandler.addServletContainerInitializer(new ServletContainerInitializerHolder(sciInfo.getSciInstance(),
+                sciInfo.getHandleTypesArray()));
         servletHandler.setHandler(servletContextHandler);
         this.jetty.setHandler(servletHandler);
         try {
