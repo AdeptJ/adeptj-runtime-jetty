@@ -3,19 +3,21 @@ package com.adeptj.runtime.jetty;
 import com.adeptj.runtime.kernel.AbstractServer;
 import com.adeptj.runtime.kernel.SciInfo;
 import com.adeptj.runtime.kernel.ServerName;
-import org.eclipse.jetty.server.Connector;
-import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContainerInitializerHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
 import javax.servlet.http.HttpServlet;
+import java.util.List;
 
 public class JettyServer extends AbstractServer {
 
-    private org.eclipse.jetty.server.Server jetty;
+    private Server jetty;
+
+    private ServletContextHandler context;
 
     @Override
     public ServerName getName() {
@@ -28,17 +30,17 @@ public class JettyServer extends AbstractServer {
         int minThreads = 10;
         int idleTimeout = 120;
         QueuedThreadPool threadPool = new QueuedThreadPool(maxThreads, minThreads, idleTimeout);
-        this.jetty = new org.eclipse.jetty.server.Server(threadPool);
+        this.jetty = new Server(threadPool);
         ServerConnector connector = new ServerConnector(this.jetty);
         connector.setPort(8080);
-        this.jetty.setConnectors(new Connector[]{connector});
-        ServletHandler servletHandler = new ServletHandler();
-        servletHandler.addServletWithMapping(GreetingServlet.class, "/greet");
-        ServletContextHandler servletContextHandler = new ServletContextHandler();
-        servletContextHandler.addServletContainerInitializer(new ServletContainerInitializerHolder(sciInfo.getSciInstance(),
+        this.jetty.addConnector(connector);
+        this.context = new ServletContextHandler(ServletContextHandler.SESSIONS);
+        this.context.setContextPath("/");
+        this.context.addServletContainerInitializer(new ServletContainerInitializerHolder(sciInfo.getSciInstance(),
                 sciInfo.getHandleTypesArray()));
-        servletHandler.setHandler(servletContextHandler);
-        this.jetty.setHandler(servletHandler);
+        ServletHolder greetingServlet = new ServletHolder("GreetingServlet", GreetingServlet.class);
+        this.context.addServlet(greetingServlet, "/greet");
+        this.jetty.setHandler(this.context);
         try {
             this.jetty.start();
         } catch (Exception e) {
@@ -57,7 +59,12 @@ public class JettyServer extends AbstractServer {
     }
 
     @Override
-    public void registerServlets(HttpServlet... servlets) {
-        Handler handler = this.jetty.getHandler();
+    public void registerServlets(List<Class<? extends HttpServlet>> servlets) {
+        int count = 0;
+        for (Class<? extends HttpServlet> servlet : servlets) {
+            ServletHolder greetingServlet = new ServletHolder(servlet.getSimpleName(), servlet);
+            this.context.addServlet(greetingServlet, "/servlet" + count);
+            count++;
+        }
     }
 }
