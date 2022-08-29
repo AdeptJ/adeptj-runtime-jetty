@@ -12,6 +12,9 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
+import static org.eclipse.jetty.servlet.ServletContextHandler.SECURITY;
+import static org.eclipse.jetty.servlet.ServletContextHandler.SESSIONS;
+
 public class JettyServer extends AbstractServer {
 
     private Server jetty;
@@ -33,12 +36,13 @@ public class JettyServer extends AbstractServer {
         ServerConnector connector = new ServerConnector(this.jetty);
         connector.setPort(8080);
         this.jetty.addConnector(connector);
-        this.context = new ServletContextHandler(ServletContextHandler.SESSIONS);
+        this.context = new ServletContextHandler(SESSIONS | SECURITY);
         this.context.setContextPath("/");
         SciInfo sciInfo = deployment.getSciInfo();
         this.context.addServletContainerInitializer(new ServletContainerInitializerHolder(sciInfo.getSciInstance(),
                 sciInfo.getHandleTypesArray()));
         this.registerServlets(deployment.getServletInfos());
+        new FormAuthConfigurer().configure(this.context);
         this.jetty.setHandler(this.context);
         try {
             this.jetty.start();
