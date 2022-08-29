@@ -42,7 +42,7 @@ public class JettyServer extends AbstractServer {
         this.context.addServletContainerInitializer(new ServletContainerInitializerHolder(sciInfo.getSciInstance(),
                 sciInfo.getHandleTypesArray()));
         this.registerServlets(deployment.getServletInfos());
-        new FormAuthConfigurer().configure(this.context);
+        new SecurityConfigurer().configure(this.context);
         this.jetty.setHandler(this.context);
         try {
             this.jetty.start();

@@ -9,7 +9,7 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.util.security.Password;
 
-public class FormAuthConfigurer {
+public class SecurityConfigurer {
 
     public void configure(ServletContextHandler context) {
         Constraint constraint = new Constraint();
