@@ -2,7 +2,7 @@ package com.adeptj.runtime.jetty;
 
 import com.adeptj.runtime.kernel.AbstractServer;
 import com.adeptj.runtime.kernel.SciInfo;
-import com.adeptj.runtime.kernel.ServerName;
+import com.adeptj.runtime.kernel.ServerRuntime;
 import com.adeptj.runtime.kernel.ServletDeployment;
 import com.adeptj.runtime.kernel.ServletInfo;
 import org.eclipse.jetty.server.Server;
@@ -19,8 +19,8 @@ public class JettyServer extends AbstractServer {
     private ServletContextHandler context;
 
     @Override
-    public ServerName getName() {
-        return ServerName.JETTY;
+    public ServerRuntime getRuntime() {
+        return ServerRuntime.JETTY;
     }
 
     @Override
