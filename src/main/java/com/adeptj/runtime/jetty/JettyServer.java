@@ -46,7 +46,19 @@ public class JettyServer extends AbstractServer {
         this.jetty.setHandler(this.context);
         try {
             this.jetty.start();
+            this.jetty.join();
         } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void postStart() {
+        super.postStart();
+        try {
+            this.jetty.join();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             throw new RuntimeException(e);
         }
     }
