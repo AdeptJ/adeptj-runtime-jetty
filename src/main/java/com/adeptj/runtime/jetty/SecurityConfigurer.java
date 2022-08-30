@@ -21,7 +21,7 @@ public class SecurityConfigurer {
         constraintMapping.setConstraint(constraint);
         constraintMapping.setPathSpec("/system/console/*");
 
-        ConstraintSecurityHandler securityHandler = new ConstraintSecurityHandler();
+        ConstraintSecurityHandler securityHandler = (ConstraintSecurityHandler) context.getSecurityHandler();
         securityHandler.addConstraintMapping(constraintMapping);
 
         HashLoginService loginService = new HashLoginService();
@@ -30,9 +30,7 @@ public class SecurityConfigurer {
         loginService.setUserStore(store);
         securityHandler.setLoginService(loginService);
 
-        FormAuthenticator authenticator = new FormAuthenticator("/admin/login", "/admin/login", false);
+        FormAuthenticator authenticator = new FormAuthenticator("/admin/login", "/admin/login", true);
         securityHandler.setAuthenticator(authenticator);
-
-        context.setSecurityHandler(securityHandler);
     }
 }
