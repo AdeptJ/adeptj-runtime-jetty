@@ -67,6 +67,7 @@ public class JettyServer extends AbstractServer {
         try {
             this.jetty.start();
         } catch (Exception e) {
+            this.logger.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
     }
@@ -101,9 +102,14 @@ public class JettyServer extends AbstractServer {
     @Override
     public void stop() {
         try {
+            super.preStop();
+        } catch (Exception e) {
+            this.logger.error(e.getMessage(), e);
+        }
+        try {
             this.jetty.stop();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            this.logger.error(e.getMessage(), e);
         }
     }
 
