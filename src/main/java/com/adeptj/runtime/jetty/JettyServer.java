@@ -3,6 +3,7 @@ package com.adeptj.runtime.jetty;
 import com.adeptj.runtime.jetty.handler.ContextPathHandler;
 import com.adeptj.runtime.jetty.handler.HealthCheckHandler;
 import com.adeptj.runtime.kernel.AbstractServer;
+import com.adeptj.runtime.kernel.FilterInfo;
 import com.adeptj.runtime.kernel.SciInfo;
 import com.adeptj.runtime.kernel.ServerRuntime;
 import com.adeptj.runtime.kernel.ServletDeployment;
@@ -20,6 +21,8 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
+
+import java.util.List;
 
 import static org.eclipse.jetty.servlet.ServletContextHandler.SECURITY;
 import static org.eclipse.jetty.servlet.ServletContextHandler.SESSIONS;
@@ -107,5 +110,15 @@ public class JettyServer extends AbstractServer {
     @Override
     protected void doRegisterServlet(ServletInfo info) {
         this.context.addServlet(new ServletHolder(info.getServletName(), info.getServletClass()), info.getPath());
+    }
+
+    @Override
+    protected void doRegisterFilter(FilterInfo info) {
+
+    }
+
+    @Override
+    public void registerErrorPages(List<Integer> errorCodes) {
+
     }
 }
