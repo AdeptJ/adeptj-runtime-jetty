@@ -59,6 +59,7 @@ public class JettyServer extends AbstractServer {
                 sciInfo.getHandleTypesArray()));
         this.registerServlets(deployment.getServletInfos());
         new SecurityConfigurer().configure(this.context);
+        new ErrorHandlerConfigurer().configure(this.context);
         this.jetty.setHandler(this.createRootHandler(this.context));
         try {
             this.jetty.start();
