@@ -17,7 +17,7 @@ public class ContextPathHandler extends HandlerWrapper {
     @Override
     public void handle(String target, Request baseRequest,
                        HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        if (request.getRequestURI().equals("/")) {
+        if (request.getRequestURI().equals("/") || request.getRequestURI().startsWith("/;jsessionid")) {
             response.setStatus(SC_FOUND);
             response.setHeader(HEADER_LOC, "/system/console/bundles");
             baseRequest.setHandled(true);
