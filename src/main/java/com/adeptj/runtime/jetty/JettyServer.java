@@ -127,4 +127,9 @@ public class JettyServer extends AbstractServer {
     public void registerErrorPages(List<Integer> errorCodes) {
 
     }
+
+    @Override
+    public void addServletContextAttribute(String name, Object value) {
+        this.context.getServletContext().setAttribute(name, value);
+    }
 }
