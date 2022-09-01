@@ -1,17 +1,15 @@
 package com.adeptj.runtime.jetty;
 
+import com.adeptj.runtime.kernel.UserManager;
 import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
-import org.eclipse.jetty.security.HashLoginService;
-import org.eclipse.jetty.security.UserStore;
 import org.eclipse.jetty.security.authentication.FormAuthenticator;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.util.security.Constraint;
-import org.eclipse.jetty.util.security.Password;
 
 public class SecurityConfigurer {
 
-    public void configure(ServletContextHandler context) {
+    public void configure(ServletContextHandler context, UserManager userManager) {
         Constraint constraint = new Constraint();
         constraint.setName(Constraint.__FORM_AUTH);
         constraint.setRoles(new String[]{"OSGiAdmin"});
@@ -24,11 +22,7 @@ public class SecurityConfigurer {
         ConstraintSecurityHandler securityHandler = (ConstraintSecurityHandler) context.getSecurityHandler();
         securityHandler.addConstraintMapping(constraintMapping);
 
-        HashLoginService loginService = new HashLoginService();
-        UserStore store = new UserStore();
-        store.addUser("admin", new Password("admin"), new String[] {"OSGiAdmin"});
-        loginService.setUserStore(store);
-        securityHandler.setLoginService(loginService);
+        securityHandler.setLoginService(new MVStoreLoginService(userManager));
 
         FormAuthenticator authenticator = new FormAuthenticator("/admin/login", "/admin/login", true);
         securityHandler.setAuthenticator(authenticator);
