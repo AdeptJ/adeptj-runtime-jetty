@@ -13,7 +13,8 @@ import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.handler.HandlerList;
+import org.eclipse.jetty.server.handler.ContextHandler;
+import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.servlet.ServletContainerInitializerHolder;
@@ -73,19 +74,20 @@ public class JettyServer extends AbstractServer {
     }
 
     private Handler createRootHandler(ServletContextHandler servletContextHandler) {
-        ResourceHandler resourceHandler = this.createResourceHandler();
-        HandlerList handlers = new HandlerList();
-        handlers.setHandlers(new Handler[]{new HealthCheckHandler(), new GzipHandler(), resourceHandler, servletContextHandler});
-        ContextPathHandler contextPathHandler = new ContextPathHandler();
-        contextPathHandler.setHandler(handlers);
-        return contextPathHandler;
+        servletContextHandler.insertHandler(new ContextPathHandler());
+        servletContextHandler.insertHandler(new HealthCheckHandler());
+        servletContextHandler.insertHandler(new GzipHandler());
+        return new ContextHandlerCollection(servletContextHandler, this.createStaticContextHandler());
     }
 
-    private ResourceHandler createResourceHandler() {
+    private ContextHandler createStaticContextHandler() {
         ResourceHandler resourceHandler = new ResourceHandler();
         resourceHandler.setDirectoriesListed(false);
-        resourceHandler.setBaseResource(Resource.newClassPathResource("/WEB-INF"));
-        return resourceHandler;
+        ContextHandler staticResourceContext = new ContextHandler();
+        staticResourceContext.setContextPath("/static");
+        staticResourceContext.setBaseResource(Resource.newClassPathResource("/WEB-INF/static"));
+        staticResourceContext.setHandler(resourceHandler);
+        return staticResourceContext;
     }
 
     @Override
