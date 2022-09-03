@@ -3,11 +3,13 @@ package com.adeptj.runtime.jetty;
 import com.adeptj.runtime.jetty.handler.ContextPathHandler;
 import com.adeptj.runtime.jetty.handler.HealthCheckHandler;
 import com.adeptj.runtime.kernel.AbstractServer;
+import com.adeptj.runtime.kernel.ConfigProvider;
 import com.adeptj.runtime.kernel.FilterInfo;
 import com.adeptj.runtime.kernel.SciInfo;
 import com.adeptj.runtime.kernel.ServerRuntime;
 import com.adeptj.runtime.kernel.ServletDeployment;
 import com.adeptj.runtime.kernel.ServletInfo;
+import com.typesafe.config.Config;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -41,20 +43,22 @@ public class JettyServer extends AbstractServer {
 
     @Override
     public void start(String[] args, ServletDeployment deployment) {
-        int maxThreads = 100;
-        int minThreads = 10;
-        int idleTimeout = 120;
+        Config config = ConfigProvider.getInstance().getReferenceConfig();
+        int minThreads = config.getInt("jetty.qtp.minThreads");
+        int maxThreads = config.getInt("jetty.qtp.maxThreads");
+        int idleTimeout = config.getInt("jetty.qtp.idleTimeout");
         QueuedThreadPool threadPool = new QueuedThreadPool(maxThreads, minThreads, idleTimeout);
         this.jetty = new Server(threadPool);
         HttpConfiguration httpConfig = new HttpConfiguration();
         httpConfig.setOutputBufferSize(32768);
         httpConfig.setRequestHeaderSize(8192);
         httpConfig.setResponseHeaderSize(8192);
-        httpConfig.setSendServerVersion(true);
-        httpConfig.setSendDateHeader(false);
+        httpConfig.setSendServerVersion(false);
+        httpConfig.setSendDateHeader(true);
         ServerConnector connector = new ServerConnector(this.jetty, new HttpConnectionFactory(httpConfig));
-        connector.setPort(8080);
+        connector.setPort(this.resolvePort(config));
         connector.setIdleTimeout(30000);
+        connector.addBean(new TimingHttpChannelListener());
         this.jetty.addConnector(connector);
         this.context = new ServletContextHandler(SESSIONS | SECURITY);
         this.context.setContextPath("/");
@@ -76,8 +80,9 @@ public class JettyServer extends AbstractServer {
     private Handler createRootHandler(ServletContextHandler servletContextHandler) {
         servletContextHandler.insertHandler(new ContextPathHandler());
         servletContextHandler.insertHandler(new HealthCheckHandler());
-        servletContextHandler.insertHandler(new GzipHandler());
-        return new ContextHandlerCollection(servletContextHandler, this.createStaticContextHandler());
+        GzipHandler gzipHandler = new GzipHandler();
+        gzipHandler.setHandler(new ContextHandlerCollection(servletContextHandler, this.createStaticContextHandler()));
+        return gzipHandler;
     }
 
     private ContextHandler createStaticContextHandler() {
@@ -88,17 +93,6 @@ public class JettyServer extends AbstractServer {
         staticResourceContext.setBaseResource(Resource.newClassPathResource("/WEB-INF/static"));
         staticResourceContext.setHandler(resourceHandler);
         return staticResourceContext;
-    }
-
-    @Override
-    public void postStart() {
-        super.postStart();
-        try {
-            this.jetty.join();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException(e);
-        }
     }
 
     @Override
