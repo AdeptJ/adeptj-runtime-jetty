@@ -1,6 +1,6 @@
 package com.adeptj.runtime.jetty;
 
-import com.adeptj.runtime.kernel.security.PasswordEncoder;
+import com.adeptj.runtime.kernel.util.PasswordEncoder;
 import org.eclipse.jetty.util.security.Password;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
